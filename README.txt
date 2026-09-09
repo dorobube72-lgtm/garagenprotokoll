@@ -41,3 +41,5 @@ V2.7: Protokollspeicher von localStorage auf IndexedDB umgestellt, damit Fotos n
 V2.8: Ursache des Speicherfehlers mit Fotos behoben. Die Base64-Konvertierung der verschlüsselten Protokolldaten arbeitet nun in kleinen Blöcken statt die komplette große Bytefolge auf einmal an JavaScript zu übergeben. Dadurch können Protokolle mit Fotos auf mobilem Chrome gespeichert werden. IndexedDB-Speicher aus V2.7 bleibt erhalten.
 
 V2.9: Der gebrandete blaue Kopfbereich mit Garagen-Icon, Titel, Eigentümer und Domoconzept wird wieder in PDF-Vorschau und PDF/Druck ausgegeben. Er ist für A4 kompakter formatiert. Alle V2.8 Speicher-/Fotofixes bleiben erhalten.
+
+V2.10: Fotos werden in Vorschau und PDF vollständig ohne Beschnitt dargestellt. Die feste Bildhöhe und object-fit: cover wurden entfernt; Bilder passen sich nun proportional an ihre Originalmaße an.
