@@ -33,7 +33,7 @@ header h1{font-size:25px;line-height:1.05;margin:0 0 4px;color:#fff}
 <section class="card"><h2>7. Verwaltung</h2><div class="notice"><strong>Eigentümer/in:</strong> <span id="ownerFooter">_____ Dahlbüdding</span><br><strong>vertreten durch:</strong> Domoconzept Immobilien- und Verwaltungs GmbH &amp; Co. KG<br>Hörder Semerteichstraße 175, 44263 Dortmund</div></section>
 <section class="card no-print"><h2>Datenschutz & Sicherung</h2><div class="notice"><strong>🔐 Datenschutz:</strong> Gespeicherte Protokolldaten und Unterschriften werden auf diesem Gerät mit AES-GCM verschlüsselt gespeichert. Das App-Passwort wird nicht gespeichert.</div><div class="grid2" style="margin-top:10px"><button class="btn secondary" onclick="exportData()">💾 Sicherung exportieren</button><label class="btn secondary" style="text-align:center;margin:0">📂 Sicherung laden<input type="file" accept="application/json" hidden onchange="importData(event)"></label></div></section>
 </main>
-<div class="toolbar no-print"><button class="btn secondary" onclick="saveProtocol()">💾 Speichern</button><button class="btn secondary" onclick="showProtocols()">📂 Meine Protokolle</button><button class="btn" onclick="window.print()">PDF</button><button class="btn danger" onclick="newProtocol()">Neu</button><button class="btn secondary" onclick="lockNow()">🔒 Sperren</button></div>
+<div class="toolbar no-print"><button class="btn secondary" onclick="saveProtocol()">💾 Speichern</button><button class="btn secondary" onclick="showProtocols()">📂 Meine Protokolle</button><button class="btn secondary" onclick="showPreview()">👁 Vorschau</button><button class="btn" onclick="window.print()">PDF</button><button class="btn danger" onclick="newProtocol()">Neu</button><button class="btn secondary" onclick="lockNow()">🔒 Sperren</button></div>
 <div id="modal" class="modal hidden no-print"><div class="modal-card"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Meine Garagenprotokolle</h2><button class="btn secondary" onclick="hideProtocols()">Schließen</button></div><p class="small">Gespeicherte Protokolle bleiben verschlüsselt auf diesem Gerät verfügbar.</p><div id="protocolList"></div></div></div>
 <div id="lock" class="lock"><div class="lock-card"><div style="font-size:40px">🔐</div><h2 id="lockTitle">Datenschutz einrichten</h2><p class="small" id="lockText">Lege ein Passwort für die lokale Verschlüsselung deiner Garagenprotokolle fest.</p><label>App-Passwort</label><input type="password" id="password"><div id="confirmWrap"><label>Passwort wiederholen</label><input type="password" id="password2"></div><div class="error" id="lockError"></div><button type="button" id="unlockBtn" class="btn" style="width:100%">Entsperren / einrichten</button><p class="small"><strong>Wichtig:</strong> Das Passwort kann nicht wiederhergestellt werden.</p></div></div>
 <script>
@@ -46,20 +46,22 @@ document.addEventListener('input',e=>{if(e.target.matches('[data-save=eigentueme
 async function derive(p,s){let m=await crypto.subtle.importKey('raw',enc.encode(p),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:s,iterations:ITER,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 async function encrypt(o,k=key){let iv=crypto.getRandomValues(new Uint8Array(12)),d=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,enc.encode(JSON.stringify(o)));return{iv:b64(iv),data:b64(d)}}async function decrypt(o,k=key){let d=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},k,unb64(o.data));return JSON.parse(dec.decode(d))}
 
-function rememberSession(p){try{localStorage.setItem(SESSION,JSON.stringify({password:p,expires:Date.now()+SESSION_MS}))}catch(e){}}
-function clearSession(){try{localStorage.removeItem(SESSION)}catch(e){}}
-function formatStamp(iso){if(!iso)return'';let d=new Date(iso);return d.toLocaleDateString('de-DE')+' um '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr'}
-function renderStamp(){let w=document.getElementById('signatureStampWrap'),s=document.getElementById('signatureStamp');if(!w||!s)return;if(signatureTimestamp){s.textContent=formatStamp(signatureTimestamp);w.style.display='block'}else w.style.display='none'}
-function markSigned(){if(!signatureTimestamp)signatureTimestamp=new Date().toISOString();renderStamp()}
-function lockNow(){clearSession();key=null;document.getElementById('password').value='';document.getElementById('lock').style.display='flex'}
+
+function sessionDb(){
+  return new Promise((resolve,reject)=>{let r=indexedDB.open("GarageProtocolSessionDB",1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("s"))r.result.createObjectStore("s")};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})
+}
+async function sessPut(v){let db=await sessionDb();return new Promise((res,rej)=>{let tx=db.transaction("s","readwrite");tx.objectStore("s").put(v,"unlock");tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+async function sessGet(){let db=await sessionDb();return new Promise((res,rej)=>{let r=db.transaction("s","readonly").objectStore("s").get("unlock");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function rememberSession(){try{await sessPut({key,expires:Date.now()+SESSION_MS})}catch(e){}}
+async function clearSession(){try{let db=await sessionDb();await new Promise((res,rej)=>{let tx=db.transaction("s","readwrite");tx.objectStore("s").delete("unlock");tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}catch(e){}}
+async function lockNow(){await clearSession();key=null;document.getElementById('password').value='';document.getElementById('lock').style.display='flex'}
 async function trySessionUnlock(){
   let c=localStorage.getItem(CHECK);if(!c)return false;
   try{
-    let s=JSON.parse(localStorage.getItem(SESSION)||'null');if(!s||!s.password||Date.now()>s.expires){clearSession();return false}
-    let x=JSON.parse(c),k=await derive(s.password,unb64(x.salt)),probe=await decrypt(x.test,k);
-    if(!probe||probe.ok!==true)throw new Error('invalid');
-    key=k;rememberSession(s.password);document.getElementById('lock').style.display='none';return true
-  }catch(e){clearSession();key=null;return false}
+    let s=await sessGet();if(!s||!s.key||Date.now()>s.expires){await clearSession();return false}
+    let x=JSON.parse(c),probe=await decrypt(x.test,s.key);if(!probe||probe.ok!==true)throw new Error('invalid');
+    key=s.key;document.getElementById('lock').style.display='none';return true
+  }catch(e){await clearSession();key=null;return false}
 }
 async function unlockApp(){
   const p=document.getElementById('password').value;
@@ -78,12 +80,12 @@ async function unlockApp(){
         return;
       }
       const salt=crypto.getRandomValues(new Uint8Array(16));
-      key=await derive(p,salt);rememberSession(p);
+      key=await derive(p,salt);await rememberSession();
       const test=await encrypt({ok:true});
       localStorage.setItem(CHECK,JSON.stringify({salt:b64(salt),test}));
     }else{
       const x=JSON.parse(c);
-      key=await derive(p,unb64(x.salt));rememberSession(p);
+      key=await derive(p,unb64(x.salt));await rememberSession();
       const probe=await decrypt(x.test);
       if(!probe || probe.ok!==true) throw new Error('Prüfdaten ungültig');
     }

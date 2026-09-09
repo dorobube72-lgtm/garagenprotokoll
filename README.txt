@@ -19,3 +19,5 @@ Version 1.6: Fotodokumentation ergänzt: je ein Foto „Garagentor außen“ und
 Version 1.7: 12-Stunden-Arbeitssitzung (Passwort nur einmal pro Sitzung), manueller „Sperren“-Button und automatischer Zeitstempel beim Unterschreiben. Fotodokumentation bleibt erhalten.
 
 Version 1.8: 12-Stunden-Freigabe bleibt über vollständiges Schließen der PWA erhalten; manueller Sperren-Button löscht sie sofort. Neue schreibgeschützte Vorschau vor der Unterschrift; beide Fotofelder werden angezeigt.
+
+V1.9: Korrigierte 12-Stunden-Freigabe über App-Neustarts ohne Speicherung des Passworts; nicht exportierbarer WebCrypto-Schlüssel mit Ablaufzeit in IndexedDB. Vorschau-Button jetzt sichtbar in der unteren Leiste.
