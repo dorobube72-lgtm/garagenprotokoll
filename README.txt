@@ -7,3 +7,5 @@ Version 1.1: Fehler beim erstmaligen Einrichten der lokalen Verschlüsselung beh
 
 
 Version 1.2: Neues Garagen-/Auto-App-Icon; alle Funktionen aus V1.1 inkl. Passwortschutz/Verschlüsselung bleiben erhalten.
+
+Version 1.3: Bugfix für Datenschutz-Login: Nach erfolgreichem Einrichten/Entsperren wird der Sperrbildschirm jetzt korrekt ausgeblendet.
