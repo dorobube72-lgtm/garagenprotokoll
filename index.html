@@ -130,7 +130,20 @@ async function unlockApp(){
 }
 function initLock(){let c=localStorage.getItem(CHECK);if(c){document.getElementById('lockTitle').textContent='Garagenprotokoll entsperren';document.getElementById('lockText').textContent='Deine Garagen- und Mieterdaten sind lokal verschlüsselt gespeichert.';document.getElementById('confirmWrap').style.display='none'}}
 async function getAll(){let raw=localStorage.getItem(STORE);if(!raw)return[];try{return await decrypt(JSON.parse(raw))}catch{return[]}}async function setAll(a){localStorage.setItem(STORE,JSON.stringify(await encrypt(a)))}
-async function saveProtocol(){if(!key)return;let a=await getAll(),o=vals();if(!currentId)currentId=crypto.randomUUID();let rec={id:currentId,updated:new Date().toISOString(),data:o},i=a.findIndex(x=>x.id===currentId);if(i>=0)a[i]=rec;else a.unshift(rec);await setAll(a);alert('Garagenprotokoll gespeichert. 🔐')}
+async function saveProtocol(){
+  if(!key){alert('Bitte die App zuerst entsperren.');return}
+  try{
+    let a=await getAll(),o=vals();
+    if(!currentId)currentId=crypto.randomUUID();
+    let rec={id:currentId,updated:new Date().toISOString(),data:o},i=a.findIndex(x=>x.id===currentId);
+    if(i>=0)a[i]=rec;else a.unshift(rec);
+    await setAll(a);
+    alert('Garagenprotokoll gespeichert. 🔐');
+  }catch(e){
+    console.error(e);
+    alert('Das Protokoll konnte nicht gespeichert werden. Bitte erneut versuchen.');
+  }
+}
 async function showProtocols(){let a=await getAll(),box=document.getElementById('protocolList');box.innerHTML=a.length?'':'<p class="small">Noch keine Protokolle gespeichert.</p>';a.forEach(r=>{let d=r.data,el=document.createElement('div');el.className='item';el.innerHTML=`<strong>${d.objekt||'Garage'} ${d.garage_nr?'· Nr. '+d.garage_nr:''}</strong><div class="small">${d.art||''} · ${d.datum||''} · ${d.mieter_name||d.nachmieter_name||''}</div><div class="actions"><button type="button" class="btn secondary" onclick="openP('${r.id}')">Öffnen</button><button type="button" class="btn secondary" onclick="copyP('${r.id}')">📋 Kopieren</button><button type="button" class="btn danger" onclick="delP('${r.id}')">Löschen</button></div>`;box.appendChild(el)});let m=document.getElementById('modal');m.classList.remove('hidden');m.style.display='flex'}function hideProtocols(){let m=document.getElementById('modal');m.classList.add('hidden');m.style.display='none'}
 async function openP(id){let r=(await getAll()).find(x=>x.id===id);if(r){currentId=id;fill(r.data);hideProtocols()}}async function copyP(id){let r=(await getAll()).find(x=>x.id===id);if(!r)return;let d=structuredClone(r.data);d.protokollnr=nr();d.datum=new Date().toISOString().slice(0,10);d.art='Übergabe / Einzug';d.mieter_name='';d.mieter_adresse='';d.mieter_ort='';d.nachmieter_name='';d.nachmieter_adresse='';d.nachmieter_ort='';d.sigTenant='';d.sigLandlord='';d.signatureTimestamp='';currentId=null;fill(d);hideProtocols();alert('Kopie erstellt – Mieterdaten und Unterschriften wurden geleert.')}async function delP(id){if(!confirm('Dieses Protokoll löschen?'))return;await setAll((await getAll()).filter(x=>x.id!==id));showProtocols()}
 function nr(){let d=new Date(),s=d.toISOString().slice(0,10).replaceAll('-','');return'GP-'+s+'-'+Math.floor(100+Math.random()*900)}function newProtocol(){if(!confirm('Neues Protokoll beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;document.querySelectorAll('[data-save]').forEach(e=>e.value='');document.querySelectorAll('input[type=radio]').forEach(e=>e.checked=false);document.querySelector('[data-save=eigentuemer_nachname]').value='Dahlbüdding';document.querySelector('[data-save=protokollnr]').value=nr();document.querySelector('[data-save=datum]').value=new Date().toISOString().slice(0,10);clearSig('sigTenant');clearSig('sigLandlord');signatureTimestamp='';renderStamp();clearPhotos();owner()}
@@ -260,21 +273,36 @@ function pl(el){if(el.id){let l=document.querySelector('label[for="'+CSS.escape(
 
 
 function syncCloneState(srcDoc, cloneDoc){
-  const srcEls=[...srcDoc.querySelectorAll('input,textarea,select,canvas')];
-  const cloneEls=[...cloneDoc.querySelectorAll('input,textarea,select,canvas')];
-  srcEls.forEach((s,i)=>{
-    const c=cloneEls[i]; if(!c)return;
+  // Nur echte Protokollfelder synchronisieren. Datei-Inputs werden bewusst ignoriert.
+  const srcEls=[...srcDoc.querySelectorAll('[data-save],input[name="art"],input[name="zustand"],textarea,select')];
+  srcEls.forEach(s=>{
+    let c=null;
+    if(s.dataset?.save) c=cloneDoc.querySelector(`[data-save="${CSS.escape(s.dataset.save)}"]`);
+    else if(s.name) c=[...cloneDoc.querySelectorAll(`input[name="${CSS.escape(s.name)}"]`)].find(x=>x.value===s.value);
+    if(!c)return;
     if(s.tagName==='INPUT'){
-      if(s.type==='checkbox'||s.type==='radio'){c.checked=s.checked;if(s.checked)c.setAttribute('checked','checked');else c.removeAttribute('checked')}
-      else {c.value=s.value;c.setAttribute('value',s.value)}
-    }else if(s.tagName==='TEXTAREA'){c.value=s.value;c.textContent=s.value}
-    else if(s.tagName==='SELECT'){
-      c.value=s.value;[...c.options].forEach(o=>{if(o.value===s.value)o.setAttribute('selected','selected');else o.removeAttribute('selected')})
-    }else if(s.tagName==='CANVAS'){
-      try{
-        const img=cloneDoc.createElement('img');img.src=s.toDataURL();img.style.width='100%';img.style.height='150px';img.style.objectFit='contain';img.style.border='0';c.replaceWith(img)
-      }catch(e){}
+      if(s.type==='checkbox'||s.type==='radio'){
+        c.checked=s.checked;
+        if(s.checked)c.setAttribute('checked','checked');else c.removeAttribute('checked');
+      }else if(s.type!=='file'){
+        c.value=s.value;c.setAttribute('value',s.value);
+      }
+    }else if(s.tagName==='TEXTAREA'){
+      c.value=s.value;c.textContent=s.value;
+    }else if(s.tagName==='SELECT'){
+      c.value=s.value;
+      [...c.options].forEach(o=>{if(o.value===s.value)o.setAttribute('selected','selected');else o.removeAttribute('selected')});
     }
+  });
+  // Unterschriften separat über ihre IDs übernehmen.
+  ['sigTenant','sigLandlord'].forEach(id=>{
+    const s=srcDoc.getElementById(id),c=cloneDoc.getElementById(id);
+    if(!s||!c)return;
+    try{
+      const img=cloneDoc.createElement('img');img.src=s.toDataURL();
+      img.style.width='100%';img.style.height='150px';img.style.objectFit='contain';img.style.border='0';
+      c.replaceWith(img);
+    }catch(e){}
   });
 }
 function buildPrintPreview(){
@@ -330,13 +358,18 @@ function buildPrintPreview(){
 
   return '<!doctype html>\n'+temp.documentElement.outerHTML;
 }
-function showPreview(){
-  try{ if(typeof saveSilent==='function') saveSilent(); }catch(e){}
-  const frame=document.getElementById('printPreviewFrame');
-  frame.srcdoc=buildPrintPreview();
-  document.getElementById('printPreview').style.display='block';
-  document.body.style.overflow='hidden';
-  document.getElementById('printPreview').scrollTop=0;
+async function showPreview(){
+  try{
+    await preparePhotosForOutput();
+    const frame=document.getElementById('printPreviewFrame');
+    frame.srcdoc=buildPrintPreview();
+    document.getElementById('printPreview').style.display='block';
+    document.body.style.overflow='hidden';
+    document.getElementById('printPreview').scrollTop=0;
+  }catch(e){
+    console.error(e);
+    alert('Die Vorschau konnte nicht geöffnet werden. Bitte das Protokoll speichern und erneut versuchen.');
+  }
 }
 function closePreview(){
   document.getElementById('printPreview').style.display='none';
