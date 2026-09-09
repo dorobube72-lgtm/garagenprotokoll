@@ -35,3 +35,5 @@ V2.4: Fotoausgabe repariert. Aufgenommene Fotos werden vor PDF/Druck explizit au
 V2.5: Fotodokumentation hat pro Bild zwei eindeutige Aktionen: „Foto aufnehmen“ öffnet die Kamera; „Vorhandenes Foto auswählen“ öffnet die Bild-/Dateiauswahl. Die Bildvorschau ist davon getrennt. PDF-Fotofix aus V2.4 bleibt erhalten.
 
 V2.6: Fehler nach Einführung der getrennten Kamera-/Galerie-Schaltflächen behoben. Die Vorschau synchronisiert keine Datei-Inputs mehr positionsabhängig, sondern nur stabile Protokollfelder; Unterschriften werden separat übernommen. Vorschau wartet auf die Fotodarstellung. Speichern/Vorschau melden Fehler nun sichtbar statt scheinbar ohne Reaktion zu bleiben. Foto-, Unterschriften- und Protokollart-Fixes bleiben erhalten.
+
+V2.7: Protokollspeicher von localStorage auf IndexedDB umgestellt, damit Fotos nicht mehr am kleinen localStorage-Limit scheitern. Bestehende gespeicherte Protokolle werden beim ersten Öffnen automatisch aus dem alten Speicher übernommen. Nach erfolgreichem Speichern wird der alte localStorage-Eintrag entfernt. Verschlüsselung bleibt erhalten.

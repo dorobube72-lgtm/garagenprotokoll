@@ -129,7 +129,51 @@ async function unlockApp(){
   }
 }
 function initLock(){let c=localStorage.getItem(CHECK);if(c){document.getElementById('lockTitle').textContent='Garagenprotokoll entsperren';document.getElementById('lockText').textContent='Deine Garagen- und Mieterdaten sind lokal verschlüsselt gespeichert.';document.getElementById('confirmWrap').style.display='none'}}
-async function getAll(){let raw=localStorage.getItem(STORE);if(!raw)return[];try{return await decrypt(JSON.parse(raw))}catch{return[]}}async function setAll(a){localStorage.setItem(STORE,JSON.stringify(await encrypt(a)))}
+function protocolDb(){
+  return new Promise((resolve,reject)=>{
+    const r=indexedDB.open("GaragenprotokollSecureDB",1);
+    r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("data"))r.result.createObjectStore("data")};
+    r.onsuccess=()=>resolve(r.result);
+    r.onerror=()=>reject(r.error);
+  });
+}
+async function protocolDbGet(){
+  const db=await protocolDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction("data","readonly"),req=tx.objectStore("data").get("protocols");
+    req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error);
+  });
+}
+async function protocolDbSet(v){
+  const db=await protocolDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction("data","readwrite");
+    tx.objectStore("data").put(v,"protocols");
+    tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);
+  });
+}
+async function getAll(){
+  try{
+    let raw=await protocolDbGet();
+    if(raw) return await decrypt(typeof raw==="string"?JSON.parse(raw):raw);
+
+    // Bestehende Protokolle aus älteren Versionen einmalig aus localStorage übernehmen.
+    const legacy=localStorage.getItem(STORE);
+    if(!legacy)return[];
+    const data=await decrypt(JSON.parse(legacy));
+    await protocolDbSet(legacy);
+    return data;
+  }catch(e){
+    console.error("Lesefehler Protokolle",e);
+    return[];
+  }
+}
+async function setAll(a){
+  const encData=await encrypt(a);
+  await protocolDbSet(JSON.stringify(encData));
+  // Legacy-Speicher nach erfolgreicher Migration freigeben; reduziert Quota-Probleme.
+  try{localStorage.removeItem(STORE)}catch(e){}
+}
 async function saveProtocol(){
   if(!key){alert('Bitte die App zuerst entsperren.');return}
   try{
@@ -141,7 +185,7 @@ async function saveProtocol(){
     alert('Garagenprotokoll gespeichert. 🔐');
   }catch(e){
     console.error(e);
-    alert('Das Protokoll konnte nicht gespeichert werden. Bitte erneut versuchen.');
+    alert('Das Protokoll konnte nicht gespeichert werden. Bitte die App einmal schließen und erneut öffnen. Falls es dann weiterhin nicht klappt, keine Daten löschen – die vorhandenen Protokolle bleiben erhalten.');
   }
 }
 async function showProtocols(){let a=await getAll(),box=document.getElementById('protocolList');box.innerHTML=a.length?'':'<p class="small">Noch keine Protokolle gespeichert.</p>';a.forEach(r=>{let d=r.data,el=document.createElement('div');el.className='item';el.innerHTML=`<strong>${d.objekt||'Garage'} ${d.garage_nr?'· Nr. '+d.garage_nr:''}</strong><div class="small">${d.art||''} · ${d.datum||''} · ${d.mieter_name||d.nachmieter_name||''}</div><div class="actions"><button type="button" class="btn secondary" onclick="openP('${r.id}')">Öffnen</button><button type="button" class="btn secondary" onclick="copyP('${r.id}')">📋 Kopieren</button><button type="button" class="btn danger" onclick="delP('${r.id}')">Löschen</button></div>`;box.appendChild(el)});let m=document.getElementById('modal');m.classList.remove('hidden');m.style.display='flex'}function hideProtocols(){let m=document.getElementById('modal');m.classList.add('hidden');m.style.display='none'}
