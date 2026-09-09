@@ -21,6 +21,10 @@ header h1{font-size:25px;line-height:1.05;margin:0 0 4px;color:#fff}
 #printPreviewBar .btn{width:auto;min-width:0}
 #printPreviewFrameWrap{padding:16px}
 #printPreviewFrame{display:block;width:min(210mm,100%);min-height:297mm;margin:0 auto;background:#fff;border:0;box-shadow:0 4px 24px #0004}
+
+.photo-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px}
+.photo-action{cursor:pointer;text-align:center;flex:1 1 180px}
+.photo-action input{display:none!important}
 </style></head><body>
 <header><div class="header-brand"><img src="icon-192.png" alt="Garagenprotokoll"><div class="header-copy"><h1>Garagenprotokoll</h1><div class="header-subtitle">Abnahme/Übergabe</div><div class="header-meta"><strong>Eigentümer: <span id="ownerHead">_____ Dahlbüdding</span>, vertreten durch Domoconzept Immobilien- und Verwaltungs GmbH &amp; Co. KG</strong><br>Mobil ausfüllen · speichern · unterschreiben · als PDF drucken</div></div></div></header>
 <main>
@@ -29,10 +33,22 @@ header h1{font-size:25px;line-height:1.05;margin:0 0 4px;color:#fff}
 <section class="card"><h2>3. Schlüssel</h2><div class="grid2"><div><label>Anzahl Schlüssel – Tor</label><input type="number" min="0" inputmode="numeric" data-save="schluessel_tor"></div><div><label>Anzahl Schlüssel – Box</label><input type="number" min="0" inputmode="numeric" data-save="schluessel_box"></div></div></section>
 <section class="card"><h2>4. Zustand / Bemerkungen</h2><div class="chips"><label class="chip"><input type="radio" name="zustand" value="mangelfrei"> mangelfrei</label><label class="chip"><input type="radio" name="zustand" value="maengel"> Mängel festgestellt</label></div><label>Festgestellte Mängel / sonstige Bemerkungen</label><textarea data-save="bemerkungen"></textarea><div class="notice">Die Feststellungen geben den bei der gemeinsamen Besichtigung erkennbaren und in diesem Protokoll dokumentierten Zustand wieder. Nicht erkennbare bzw. verdeckte Mängel und Schäden bleiben unberührt. Weitergehende gesetzliche oder vertragliche Rechte und Pflichten bleiben unberührt.</div></section>
 <section class="card"><h2>5. Fotodokumentation</h2>
-<p class="small">Bitte jeweils ein Foto vom Garagentor außen und vom Inneren der Garage aufnehmen.</p>
+<p class="small">Bitte jeweils ein Foto vom Garagentor außen und vom Inneren der Garage dokumentieren. Du kannst ein neues Foto aufnehmen oder ein vorhandenes Foto auswählen.</p>
 <div class="photo-grid">
-  <div class="photo-box"><label>📷 Garagentor außen</label><input class="no-print" type="file" accept="image/*" capture="environment" onchange="setPhoto(event,'photo_tor','preview_tor','empty_tor')"><div id="empty_tor" class="photo-empty">Foto aufnehmen / auswählen</div><img id="preview_tor" class="photo-preview" alt="Garagentor außen"></div>
-  <div class="photo-box"><label>📷 Garage innen</label><input class="no-print" type="file" accept="image/*" capture="environment" onchange="setPhoto(event,'photo_innen','preview_innen','empty_innen')"><div id="empty_innen" class="photo-empty">Foto aufnehmen / auswählen</div><img id="preview_innen" class="photo-preview" alt="Garage innen"></div>
+  <div class="photo-box"><label>📷 Garagentor außen</label>
+    <div class="photo-actions no-print">
+      <label class="btn secondary photo-action">📷 Foto aufnehmen<input type="file" accept="image/*" capture="environment" onchange="setPhoto(event,'photo_tor','preview_tor','empty_tor')"></label>
+      <label class="btn secondary photo-action">🖼️ Vorhandenes Foto auswählen<input type="file" accept="image/*" onchange="setPhoto(event,'photo_tor','preview_tor','empty_tor')"></label>
+    </div>
+    <div id="empty_tor" class="photo-empty">Noch kein Foto vorhanden</div><img id="preview_tor" class="photo-preview" alt="Garagentor außen">
+  </div>
+  <div class="photo-box"><label>📷 Garage innen</label>
+    <div class="photo-actions no-print">
+      <label class="btn secondary photo-action">📷 Foto aufnehmen<input type="file" accept="image/*" capture="environment" onchange="setPhoto(event,'photo_innen','preview_innen','empty_innen')"></label>
+      <label class="btn secondary photo-action">🖼️ Vorhandenes Foto auswählen<input type="file" accept="image/*" onchange="setPhoto(event,'photo_innen','preview_innen','empty_innen')"></label>
+    </div>
+    <div id="empty_innen" class="photo-empty">Noch kein Foto vorhanden</div><img id="preview_innen" class="photo-preview" alt="Garage innen">
+  </div>
 </div>
 </section>
 <section class="card"><h2>6. Unterschriften</h2><h3>Mieter/in / Nachmieter/in</h3><div class="signature-wrap"><canvas id="sigTenant"></canvas><div class="sig-actions no-print"><button class="btn secondary" onclick="clearSig('sigTenant')">Unterschrift löschen</button></div></div><h3>Vermieter/in / Vertreter/in</h3><div class="signature-wrap"><canvas id="sigLandlord"></canvas><div class="sig-actions no-print"><button class="btn secondary" onclick="clearSig('sigLandlord')">Unterschrift löschen</button></div></div><div class="notice" id="signatureStampWrap" style="display:none;margin-top:10px"><strong>Unterschriften erfasst:</strong> <span id="signatureStamp"></span></div></section>
