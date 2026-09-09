@@ -12,9 +12,15 @@ header h1{font-size:25px;line-height:1.05;margin:0 0 4px;color:#fff}
 .photo-preview{width:100%;height:150px;object-fit:cover;border-radius:10px;border:1px solid var(--border);background:#fff;display:none;margin-top:8px}
 .photo-empty{height:110px;border:1px dashed #94a3b8;border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:13px;margin-top:8px;background:#fff}
 @media(max-width:600px){.photo-grid{grid-template-columns:1fr}}
-.notice{background:#f9fafb;border-left:4px solid #9ca3af;padding:10px 12px;border-radius:8px;font-size:13px}.signature-wrap{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff}canvas{display:block;width:100%;height:150px;touch-action:none}.sig-actions{padding:7px;border-top:1px solid var(--border)}.modal{position:fixed;inset:0;background:#11182773;z-index:50;padding:18px;display:flex;align-items:flex-end;justify-content:center}.hidden{display:none}.modal-card{width:min(650px,100%);max-height:82vh;overflow:auto;background:#fff;border-radius:18px;padding:14px}.item{border:1px solid var(--border);border-radius:12px;padding:11px;margin:9px 0}.actions{display:flex;gap:7px;margin-top:8px}.actions button{flex:1}.lock{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:18px}.lock.hidden{display:none}.lock-card{width:min(450px,100%);background:#fff;border:1px solid var(--border);border-radius:20px;padding:20px}.lock-card h2{font-size:21px}.error{color:var(--danger);font-size:13px;font-weight:700;min-height:18px}@media(max-width:600px){.grid2{grid-template-columns:1fr}}@media print{header,.toolbar,.no-print,.sig-actions{display:none!important}body{background:#fff}main{padding:0}.card{border-radius:0;margin:0 0 10px;break-inside:avoid}input,textarea{border:0!important;padding:2px!important}}
+.notice{background:#f9fafb;border-left:4px solid #9ca3af;padding:10px 12px;border-radius:8px;font-size:13px}.signature-wrap{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff}canvas{display:block;width:100%;height:150px;touch-action:none}.sig-actions{padding:7px;border-top:1px solid var(--border)}.modal{position:fixed;inset:0;background:#11182773;z-index:50;padding:18px;display:flex;align-items:flex-end;justify-content:center}.hidden{display:none}.modal.hidden{display:none!important}.modal-card{width:min(650px,100%);max-height:82vh;overflow:auto;background:#fff;border-radius:18px;padding:14px}.item{border:1px solid var(--border);border-radius:12px;padding:11px;margin:9px 0}.actions{display:flex;gap:7px;margin-top:8px}.actions button{flex:1}.lock{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:18px}.lock.hidden{display:none}.lock-card{width:min(450px,100%);background:#fff;border:1px solid var(--border);border-radius:20px;padding:20px}.lock-card h2{font-size:21px}.error{color:var(--danger);font-size:13px;font-weight:700;min-height:18px}@media(max-width:600px){.grid2{grid-template-columns:1fr}}@media print{header,.toolbar,.no-print,.sig-actions{display:none!important}body{background:#fff}main{padding:0}.card{border-radius:0;margin:0 0 10px;break-inside:avoid}input,textarea{border:0!important;padding:2px!important}}
 
-.preview-overlay{position:fixed;inset:0;background:#eef3f8;z-index:9998;overflow:auto;display:none}.preview-sheet{max-width:850px;margin:18px auto;background:white;padding:22px;border-radius:18px;box-shadow:0 8px 30px #0002}.preview-top{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#eef3f8;padding:10px 0}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 18px}.preview-item{padding:5px 0;border-bottom:1px solid #edf0f3}.preview-photos{display:grid;grid-template-columns:1fr 1fr;gap:12px}.preview-photos img{width:100%;max-height:350px;object-fit:contain;border-radius:10px;border:1px solid #ddd}@media(max-width:650px){.preview-sheet{margin:0;border-radius:0;padding:14px}.preview-grid,.preview-photos{grid-template-columns:1fr}}
+
+/* Bildschirm-Vorschau im Stil der späteren PDF-/Druckausgabe */
+#printPreview{position:fixed;inset:0;z-index:9999;background:#d9dde3;overflow:auto;display:none}
+#printPreviewBar{position:sticky;top:0;z-index:10000;background:#172033;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 2px 8px #0003}
+#printPreviewBar .btn{width:auto;min-width:0}
+#printPreviewFrameWrap{padding:16px}
+#printPreviewFrame{display:block;width:min(210mm,100%);min-height:297mm;margin:0 auto;background:#fff;border:0;box-shadow:0 4px 24px #0004}
 </style></head><body>
 <header><div class="header-brand"><img src="icon-192.png" alt="Garagenprotokoll"><div class="header-copy"><h1>Garagenprotokoll</h1><div class="header-subtitle">Abnahme/Übergabe</div><div class="header-meta"><strong>Eigentümer: <span id="ownerHead">_____ Dahlbüdding</span>, vertreten durch Domoconzept Immobilien- und Verwaltungs GmbH &amp; Co. KG</strong><br>Mobil ausfüllen · speichern · unterschreiben · als PDF drucken</div></div></div></header>
 <main>
@@ -34,7 +40,7 @@ header h1{font-size:25px;line-height:1.05;margin:0 0 4px;color:#fff}
 <section class="card no-print"><h2>Datenschutz & Sicherung</h2><div class="notice"><strong>🔐 Datenschutz:</strong> Gespeicherte Protokolldaten und Unterschriften werden auf diesem Gerät mit AES-GCM verschlüsselt gespeichert. Das App-Passwort wird nicht gespeichert.</div><div class="grid2" style="margin-top:10px"><button class="btn secondary" onclick="exportData()">💾 Sicherung exportieren</button><label class="btn secondary" style="text-align:center;margin:0">📂 Sicherung laden<input type="file" accept="application/json" hidden onchange="importData(event)"></label></div></section>
 </main>
 <div class="toolbar no-print"><button class="btn secondary" onclick="saveProtocol()">💾 Speichern</button><button class="btn secondary" onclick="showProtocols()">📂 Meine Protokolle</button><button class="btn secondary" onclick="showPreview()">👁 Vorschau</button><button class="btn" onclick="window.print()">PDF</button><button class="btn danger" onclick="newProtocol()">Neu</button><button class="btn secondary" onclick="lockNow()">🔒 Sperren</button></div>
-<div id="modal" class="modal hidden no-print"><div class="modal-card"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Meine Garagenprotokolle</h2><button class="btn secondary" onclick="hideProtocols()">Schließen</button></div><p class="small">Gespeicherte Protokolle bleiben verschlüsselt auf diesem Gerät verfügbar.</p><div id="protocolList"></div></div></div>
+<div id="modal" class="modal hidden no-print" onclick="if(event.target===this)hideProtocols()"><div class="modal-card"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Meine Garagenprotokolle</h2><button type="button" class="btn secondary" onclick="hideProtocols()">Schließen</button></div><p class="small">Gespeicherte Protokolle bleiben verschlüsselt auf diesem Gerät verfügbar.</p><div id="protocolList"></div></div></div>
 <div id="lock" class="lock"><div class="lock-card"><div style="font-size:40px">🔐</div><h2 id="lockTitle">Datenschutz einrichten</h2><p class="small" id="lockText">Lege ein Passwort für die lokale Verschlüsselung deiner Garagenprotokolle fest.</p><label>App-Passwort</label><input type="password" id="password"><div id="confirmWrap"><label>Passwort wiederholen</label><input type="password" id="password2"></div><div class="error" id="lockError"></div><button type="button" id="unlockBtn" class="btn" style="width:100%">Entsperren / einrichten</button><p class="small"><strong>Wichtig:</strong> Das Passwort kann nicht wiederhergestellt werden.</p></div></div>
 <script>
 const STORE='garage_protocols_enc_v1',CHECK='garage_crypto_check_v1',ITER=180000,SESSION='garage_session_v17',SESSION_MS=43200000;let key=null,currentId=null;let photos={photo_tor:'',photo_innen:''},signatureTimestamp='';
@@ -109,7 +115,7 @@ async function unlockApp(){
 function initLock(){let c=localStorage.getItem(CHECK);if(c){document.getElementById('lockTitle').textContent='Garagenprotokoll entsperren';document.getElementById('lockText').textContent='Deine Garagen- und Mieterdaten sind lokal verschlüsselt gespeichert.';document.getElementById('confirmWrap').style.display='none'}}
 async function getAll(){let raw=localStorage.getItem(STORE);if(!raw)return[];try{return await decrypt(JSON.parse(raw))}catch{return[]}}async function setAll(a){localStorage.setItem(STORE,JSON.stringify(await encrypt(a)))}
 async function saveProtocol(){if(!key)return;let a=await getAll(),o=vals();if(!currentId)currentId=crypto.randomUUID();let rec={id:currentId,updated:new Date().toISOString(),data:o},i=a.findIndex(x=>x.id===currentId);if(i>=0)a[i]=rec;else a.unshift(rec);await setAll(a);alert('Garagenprotokoll gespeichert. 🔐')}
-async function showProtocols(){let a=await getAll(),box=document.getElementById('protocolList');box.innerHTML=a.length?'':'<p class="small">Noch keine Protokolle gespeichert.</p>';a.forEach(r=>{let d=r.data,el=document.createElement('div');el.className='item';el.innerHTML=`<strong>${d.objekt||'Garage'} ${d.garage_nr?'· Nr. '+d.garage_nr:''}</strong><div class="small">${d.art||''} · ${d.datum||''} · ${d.mieter_name||d.nachmieter_name||''}</div><div class="actions"><button class="btn secondary" onclick="openP('${r.id}')">Öffnen</button><button class="btn secondary" onclick="copyP('${r.id}')">📋 Kopieren</button><button class="btn danger" onclick="delP('${r.id}')">Löschen</button></div>`;box.appendChild(el)});document.getElementById('modal').classList.remove('hidden')}function hideProtocols(){document.getElementById('modal').classList.add('hidden')}
+async function showProtocols(){let a=await getAll(),box=document.getElementById('protocolList');box.innerHTML=a.length?'':'<p class="small">Noch keine Protokolle gespeichert.</p>';a.forEach(r=>{let d=r.data,el=document.createElement('div');el.className='item';el.innerHTML=`<strong>${d.objekt||'Garage'} ${d.garage_nr?'· Nr. '+d.garage_nr:''}</strong><div class="small">${d.art||''} · ${d.datum||''} · ${d.mieter_name||d.nachmieter_name||''}</div><div class="actions"><button type="button" class="btn secondary" onclick="openP('${r.id}')">Öffnen</button><button type="button" class="btn secondary" onclick="copyP('${r.id}')">📋 Kopieren</button><button type="button" class="btn danger" onclick="delP('${r.id}')">Löschen</button></div>`;box.appendChild(el)});let m=document.getElementById('modal');m.classList.remove('hidden');m.style.display='flex'}function hideProtocols(){let m=document.getElementById('modal');m.classList.add('hidden');m.style.display='none'}
 async function openP(id){let r=(await getAll()).find(x=>x.id===id);if(r){currentId=id;fill(r.data);hideProtocols()}}async function copyP(id){let r=(await getAll()).find(x=>x.id===id);if(!r)return;let d=structuredClone(r.data);d.protokollnr=nr();d.datum=new Date().toISOString().slice(0,10);d.art='Übergabe / Einzug';d.mieter_name='';d.mieter_adresse='';d.mieter_ort='';d.nachmieter_name='';d.nachmieter_adresse='';d.nachmieter_ort='';d.sigTenant='';d.sigLandlord='';d.signatureTimestamp='';currentId=null;fill(d);hideProtocols();alert('Kopie erstellt – Mieterdaten und Unterschriften wurden geleert.')}async function delP(id){if(!confirm('Dieses Protokoll löschen?'))return;await setAll((await getAll()).filter(x=>x.id!==id));showProtocols()}
 function nr(){let d=new Date(),s=d.toISOString().slice(0,10).replaceAll('-','');return'GP-'+s+'-'+Math.floor(100+Math.random()*900)}function newProtocol(){if(!confirm('Neues Protokoll beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;document.querySelectorAll('[data-save]').forEach(e=>e.value='');document.querySelectorAll('input[type=radio]').forEach(e=>e.checked=false);document.querySelector('[data-save=eigentuemer_nachname]').value='Dahlbüdding';document.querySelector('[data-save=protokollnr]').value=nr();document.querySelector('[data-save=datum]').value=new Date().toISOString().slice(0,10);clearSig('sigTenant');clearSig('sigLandlord');signatureTimestamp='';renderStamp();clearPhotos();owner()}
 function setupCanvas(id){let c=document.getElementById(id),ctx=c.getContext('2d'),on=false,last;function size(){let img=c.toDataURL();c.width=c.clientWidth*devicePixelRatio;c.height=c.clientHeight*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);ctx.lineWidth=2;ctx.lineCap='round';drawData(id,img)}size();window.addEventListener('resize',size);let pos=e=>{let r=c.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}};c.addEventListener('pointerdown',e=>{markSigned();on=true;last=pos(e)});c.addEventListener('pointermove',e=>{if(!on)return;let p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p});window.addEventListener('pointerup',()=>on=false)}function clearSig(id){let c=document.getElementById(id);c.getContext('2d').clearRect(0,0,c.width,c.height)}function drawData(id,src){if(!src)return;let c=document.getElementById(id),im=new Image();im.onload=()=>c.getContext('2d').drawImage(im,0,0,c.clientWidth,c.clientHeight);im.src=src}
@@ -151,20 +157,78 @@ window.addEventListener('load',()=>{
 
 function ep(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function pl(el){if(el.id){let l=document.querySelector('label[for="'+CSS.escape(el.id)+'"]');if(l)return l.textContent.trim()}let p=el.closest('label');return p?(p.childNodes[0]?.textContent?.trim()||el.name||el.id):el.name||el.id||'Angabe'}
-function showPreview(){
-  let parts=['<h1>Garagenprotokoll</h1><p><strong>Abnahme/Übergabe</strong></p><div class="preview-grid">'],seen=new Set();
-  document.querySelectorAll('main input,main select,main textarea').forEach(el=>{
-    if(el.type==='file'||el.type==='button'||el.type==='submit'||el.closest('.no-print'))return;
-    if((el.type==='radio'||el.type==='checkbox')&&!el.checked)return;
-    let k=el.id||el.name;if(k&&seen.has(k)&&el.type!=='radio')return;if(k)seen.add(k);
-    let v=(el.type==='radio'||el.type==='checkbox')?(el.value||'Ja'):el.value;if(!String(v||'').trim())return;
-    parts.push('<div class="preview-item"><strong>'+ep(pl(el))+':</strong><br>'+ep(v)+'</div>')
-  });parts.push('</div>');
-  if(photos.photo_tor||photos.photo_innen){parts.push('<h2>Fotodokumentation</h2><div class="preview-photos">');if(photos.photo_tor)parts.push('<div><strong>Garagentor außen</strong><img src="'+photos.photo_tor+'"></div>');if(photos.photo_innen)parts.push('<div><strong>Garage innen</strong><img src="'+photos.photo_innen+'"></div>');parts.push('</div>')}
-  parts.push('<h2>Unterschriften</h2><p>Die Unterschriften erfolgen nach gemeinsamer Prüfung dieser Vorschau.</p>');
-  document.getElementById('previewContent').innerHTML=parts.join('');document.getElementById('previewOverlay').style.display='block';document.body.style.overflow='hidden';window.scrollTo(0,0)
+
+
+function syncCloneState(srcDoc, cloneDoc){
+  const srcEls=[...srcDoc.querySelectorAll('input,textarea,select,canvas')];
+  const cloneEls=[...cloneDoc.querySelectorAll('input,textarea,select,canvas')];
+  srcEls.forEach((s,i)=>{
+    const c=cloneEls[i]; if(!c)return;
+    if(s.tagName==='INPUT'){
+      if(s.type==='checkbox'||s.type==='radio'){c.checked=s.checked;if(s.checked)c.setAttribute('checked','checked');else c.removeAttribute('checked')}
+      else {c.value=s.value;c.setAttribute('value',s.value)}
+    }else if(s.tagName==='TEXTAREA'){c.value=s.value;c.textContent=s.value}
+    else if(s.tagName==='SELECT'){
+      c.value=s.value;[...c.options].forEach(o=>{if(o.value===s.value)o.setAttribute('selected','selected');else o.removeAttribute('selected')})
+    }else if(s.tagName==='CANVAS'){
+      try{
+        const img=cloneDoc.createElement('img');img.src=s.toDataURL();img.style.width='100%';img.style.height='150px';img.style.objectFit='contain';img.style.border='0';c.replaceWith(img)
+      }catch(e){}
+    }
+  });
 }
-function closePreview(){document.getElementById('previewOverlay').style.display='none';document.body.style.overflow=''}
+function buildPrintPreview(){
+  const clone=document.documentElement.cloneNode(true);
+  const temp=document.implementation.createHTMLDocument('');
+  temp.replaceChild(temp.importNode(clone,true),temp.documentElement);
+  syncCloneState(document,temp);
+
+  // Remove app-only UI and preview container itself.
+  temp.querySelectorAll('header,.toolbar,.no-print,.sig-actions,.modal,.lock,#printPreview').forEach(el=>el.remove());
+
+  // Mirror the actual @media print appearance on screen.
+  const style=temp.createElement('style');
+  style.textContent=`
+    html,body{background:#fff!important;margin:0!important;padding:0!important}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif!important}
+    main{padding:0!important;max-width:none!important;margin:0!important}
+    .card{border-radius:0!important;margin:0 0 10px!important;break-inside:avoid!important;box-shadow:none!important}
+    input,textarea,select{border:0!important;padding:2px!important;background:transparent!important;color:#111!important;appearance:none!important;-webkit-appearance:none!important;pointer-events:none!important}
+    button{display:none!important}
+    *{box-sizing:border-box}
+    @page{size:A4;margin:12mm}
+  `;
+  temp.head.appendChild(style);
+
+  // Disable editing/clicking while preserving exactly what will print.
+  temp.querySelectorAll('input,textarea,select').forEach(el=>{el.setAttribute('readonly','readonly');el.setAttribute('tabindex','-1');el.style.pointerEvents='none'});
+  temp.querySelectorAll('a').forEach(el=>el.style.pointerEvents='none');
+
+  // Remove scripts so preview cannot alter data.
+  temp.querySelectorAll('script').forEach(s=>s.remove());
+
+  return '<!doctype html>\n'+temp.documentElement.outerHTML;
+}
+function showPreview(){
+  try{ if(typeof saveSilent==='function') saveSilent(); }catch(e){}
+  const frame=document.getElementById('printPreviewFrame');
+  frame.srcdoc=buildPrintPreview();
+  document.getElementById('printPreview').style.display='block';
+  document.body.style.overflow='hidden';
+  document.getElementById('printPreview').scrollTop=0;
+}
+function closePreview(){
+  document.getElementById('printPreview').style.display='none';
+  document.body.style.overflow='';
+  document.getElementById('printPreviewFrame').srcdoc='';
+}
 </script>
-<div id="previewOverlay" class="preview-overlay"><div class="preview-sheet"><div class="preview-top no-print"><strong>👁 Protokoll-Vorschau</strong><button class="btn primary" type="button" onclick="closePreview()">← Zurück zum Protokoll</button></div><div id="previewContent"></div></div></div>
+
+<div id="printPreview">
+  <div id="printPreviewBar">
+    <strong>👁 PDF-Vorschau</strong>
+    <button class="btn secondary" type="button" onclick="closePreview()">← Zurück zum Protokoll</button>
+  </div>
+  <div id="printPreviewFrameWrap"><iframe id="printPreviewFrame" title="PDF-Vorschau"></iframe></div>
+</div>
 </body></html>

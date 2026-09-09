@@ -21,3 +21,7 @@ Version 1.7: 12-Stunden-Arbeitssitzung (Passwort nur einmal pro Sitzung), manuel
 Version 1.8: 12-Stunden-Freigabe bleibt über vollständiges Schließen der PWA erhalten; manueller Sperren-Button löscht sie sofort. Neue schreibgeschützte Vorschau vor der Unterschrift; beide Fotofelder werden angezeigt.
 
 V1.9: Korrigierte 12-Stunden-Freigabe über App-Neustarts ohne Speicherung des Passworts; nicht exportierbarer WebCrypto-Schlüssel mit Ablaufzeit in IndexedDB. Vorschau-Button jetzt sichtbar in der unteren Leiste.
+
+V2.0: Vorschau vollständig überarbeitet. Sie zeigt nun eine schreibgeschützte Bildschirmansicht im gleichen Drucklayout wie die spätere PDF-/Druckausgabe.
+
+V2.1: Fehler im Fenster „Meine Garagenprotokolle“ behoben. Nach „Öffnen“ wird das Fenster nun zuverlässig geschlossen; der Schließen-Button und ein Tipp auf den abgedunkelten Hintergrund schließen es ebenfalls.
