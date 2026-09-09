@@ -39,3 +39,5 @@ V2.6: Fehler nach Einführung der getrennten Kamera-/Galerie-Schaltflächen beho
 V2.7: Protokollspeicher von localStorage auf IndexedDB umgestellt, damit Fotos nicht mehr am kleinen localStorage-Limit scheitern. Bestehende gespeicherte Protokolle werden beim ersten Öffnen automatisch aus dem alten Speicher übernommen. Nach erfolgreichem Speichern wird der alte localStorage-Eintrag entfernt. Verschlüsselung bleibt erhalten.
 
 V2.8: Ursache des Speicherfehlers mit Fotos behoben. Die Base64-Konvertierung der verschlüsselten Protokolldaten arbeitet nun in kleinen Blöcken statt die komplette große Bytefolge auf einmal an JavaScript zu übergeben. Dadurch können Protokolle mit Fotos auf mobilem Chrome gespeichert werden. IndexedDB-Speicher aus V2.7 bleibt erhalten.
+
+V2.9: Der gebrandete blaue Kopfbereich mit Garagen-Icon, Titel, Eigentümer und Domoconzept wird wieder in PDF-Vorschau und PDF/Druck ausgegeben. Er ist für A4 kompakter formatiert. Alle V2.8 Speicher-/Fotofixes bleiben erhalten.
