@@ -15,3 +15,5 @@ Version 1.4: Login robuster gemacht: fester Button-Eventhandler, sichtbarer Ents
 Version 1.5: Neuer Kopfbereich mit App-Icon, Titel „Garagenprotokoll“ und Untertitel „Abnahme/Übergabe“. Alle bisherigen Funktionen inkl. Verschlüsselung/Login bleiben erhalten.
 
 Version 1.6: Fotodokumentation ergänzt: je ein Foto „Garagentor außen“ und „Garage innen“. Fotos werden mit dem Protokoll verschlüsselt gespeichert, beim Öffnen wieder angezeigt, beim Kopieren übernommen und beim neuen Protokoll geleert.
+
+Version 1.7: 12-Stunden-Arbeitssitzung (Passwort nur einmal pro Sitzung), manueller „Sperren“-Button und automatischer Zeitstempel beim Unterschreiben. Fotodokumentation bleibt erhalten.
