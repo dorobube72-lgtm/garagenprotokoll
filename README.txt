@@ -25,3 +25,5 @@ V1.9: Korrigierte 12-Stunden-Freigabe über App-Neustarts ohne Speicherung des P
 V2.0: Vorschau vollständig überarbeitet. Sie zeigt nun eine schreibgeschützte Bildschirmansicht im gleichen Drucklayout wie die spätere PDF-/Druckausgabe.
 
 V2.1: Fehler im Fenster „Meine Garagenprotokolle“ behoben. Nach „Öffnen“ wird das Fenster nun zuverlässig geschlossen; der Schließen-Button und ein Tipp auf den abgedunkelten Hintergrund schließen es ebenfalls.
+
+V2.2: Unterschriftenfunktion repariert. In V2.1 wurde beim ersten Berühren des Unterschriftenfeldes eine nicht vorhandene Funktion aufgerufen, wodurch das Zeichnen abbrach. Zeitstempel-Funktionen ergänzt und Pointer-Eingabe für Android/PWA robuster gemacht.

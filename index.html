@@ -118,7 +118,64 @@ async function saveProtocol(){if(!key)return;let a=await getAll(),o=vals();if(!c
 async function showProtocols(){let a=await getAll(),box=document.getElementById('protocolList');box.innerHTML=a.length?'':'<p class="small">Noch keine Protokolle gespeichert.</p>';a.forEach(r=>{let d=r.data,el=document.createElement('div');el.className='item';el.innerHTML=`<strong>${d.objekt||'Garage'} ${d.garage_nr?'· Nr. '+d.garage_nr:''}</strong><div class="small">${d.art||''} · ${d.datum||''} · ${d.mieter_name||d.nachmieter_name||''}</div><div class="actions"><button type="button" class="btn secondary" onclick="openP('${r.id}')">Öffnen</button><button type="button" class="btn secondary" onclick="copyP('${r.id}')">📋 Kopieren</button><button type="button" class="btn danger" onclick="delP('${r.id}')">Löschen</button></div>`;box.appendChild(el)});let m=document.getElementById('modal');m.classList.remove('hidden');m.style.display='flex'}function hideProtocols(){let m=document.getElementById('modal');m.classList.add('hidden');m.style.display='none'}
 async function openP(id){let r=(await getAll()).find(x=>x.id===id);if(r){currentId=id;fill(r.data);hideProtocols()}}async function copyP(id){let r=(await getAll()).find(x=>x.id===id);if(!r)return;let d=structuredClone(r.data);d.protokollnr=nr();d.datum=new Date().toISOString().slice(0,10);d.art='Übergabe / Einzug';d.mieter_name='';d.mieter_adresse='';d.mieter_ort='';d.nachmieter_name='';d.nachmieter_adresse='';d.nachmieter_ort='';d.sigTenant='';d.sigLandlord='';d.signatureTimestamp='';currentId=null;fill(d);hideProtocols();alert('Kopie erstellt – Mieterdaten und Unterschriften wurden geleert.')}async function delP(id){if(!confirm('Dieses Protokoll löschen?'))return;await setAll((await getAll()).filter(x=>x.id!==id));showProtocols()}
 function nr(){let d=new Date(),s=d.toISOString().slice(0,10).replaceAll('-','');return'GP-'+s+'-'+Math.floor(100+Math.random()*900)}function newProtocol(){if(!confirm('Neues Protokoll beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;document.querySelectorAll('[data-save]').forEach(e=>e.value='');document.querySelectorAll('input[type=radio]').forEach(e=>e.checked=false);document.querySelector('[data-save=eigentuemer_nachname]').value='Dahlbüdding';document.querySelector('[data-save=protokollnr]').value=nr();document.querySelector('[data-save=datum]').value=new Date().toISOString().slice(0,10);clearSig('sigTenant');clearSig('sigLandlord');signatureTimestamp='';renderStamp();clearPhotos();owner()}
-function setupCanvas(id){let c=document.getElementById(id),ctx=c.getContext('2d'),on=false,last;function size(){let img=c.toDataURL();c.width=c.clientWidth*devicePixelRatio;c.height=c.clientHeight*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);ctx.lineWidth=2;ctx.lineCap='round';drawData(id,img)}size();window.addEventListener('resize',size);let pos=e=>{let r=c.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}};c.addEventListener('pointerdown',e=>{markSigned();on=true;last=pos(e)});c.addEventListener('pointermove',e=>{if(!on)return;let p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p});window.addEventListener('pointerup',()=>on=false)}function clearSig(id){let c=document.getElementById(id);c.getContext('2d').clearRect(0,0,c.width,c.height)}function drawData(id,src){if(!src)return;let c=document.getElementById(id),im=new Image();im.onload=()=>c.getContext('2d').drawImage(im,0,0,c.clientWidth,c.clientHeight);im.src=src}
+function renderStamp(){
+  const wrap=document.getElementById('signatureStampWrap');
+  const el=document.getElementById('signatureStamp');
+  if(!wrap||!el)return;
+  if(signatureTimestamp){
+    const d=new Date(signatureTimestamp);
+    el.textContent=d.toLocaleString('de-DE',{dateStyle:'medium',timeStyle:'short'});
+    wrap.style.display='block';
+  }else{
+    el.textContent='';
+    wrap.style.display='none';
+  }
+}
+function markSigned(){
+  if(!signatureTimestamp) signatureTimestamp=new Date().toISOString();
+  renderStamp();
+}
+function setupCanvas(id){
+  const c=document.getElementById(id),ctx=c.getContext('2d');
+  let drawing=false,last=null,activePointer=null;
+  function size(){
+    const img=c.toDataURL();
+    const ratio=window.devicePixelRatio||1;
+    c.width=Math.max(1,Math.round(c.clientWidth*ratio));
+    c.height=Math.max(1,Math.round(c.clientHeight*ratio));
+    ctx.setTransform(ratio,0,0,ratio,0,0);
+    ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';
+    drawData(id,img);
+  }
+  function pos(e){
+    const r=c.getBoundingClientRect();
+    return{x:e.clientX-r.left,y:e.clientY-r.top};
+  }
+  c.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    e.preventDefault();
+    markSigned();
+    drawing=true;activePointer=e.pointerId;last=pos(e);
+    try{c.setPointerCapture(e.pointerId)}catch(_){}
+  });
+  c.addEventListener('pointermove',e=>{
+    if(!drawing||e.pointerId!==activePointer)return;
+    e.preventDefault();
+    const q=pos(e);
+    ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(q.x,q.y);ctx.stroke();
+    last=q;
+  });
+  const stop=e=>{
+    if(activePointer!==null&&e.pointerId!==undefined&&e.pointerId!==activePointer)return;
+    drawing=false;last=null;activePointer=null;
+  };
+  c.addEventListener('pointerup',stop);
+  c.addEventListener('pointercancel',stop);
+  c.addEventListener('lostpointercapture',stop);
+  size();
+  window.addEventListener('resize',size);
+}
+function clearSig(id){let c=document.getElementById(id);c.getContext('2d').clearRect(0,0,c.width,c.height)}function drawData(id,src){if(!src)return;let c=document.getElementById(id),im=new Image();im.onload=()=>c.getContext('2d').drawImage(im,0,0,c.clientWidth,c.clientHeight);im.src=src}
 
 function renderPhoto(k,previewId,emptyId){
   const im=document.getElementById(previewId),empty=document.getElementById(emptyId),src=photos[k];
