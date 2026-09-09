@@ -27,3 +27,5 @@ V2.0: Vorschau vollständig überarbeitet. Sie zeigt nun eine schreibgeschützte
 V2.1: Fehler im Fenster „Meine Garagenprotokolle“ behoben. Nach „Öffnen“ wird das Fenster nun zuverlässig geschlossen; der Schließen-Button und ein Tipp auf den abgedunkelten Hintergrund schließen es ebenfalls.
 
 V2.2: Unterschriftenfunktion repariert. In V2.1 wurde beim ersten Berühren des Unterschriftenfeldes eine nicht vorhandene Funktion aufgerufen, wodurch das Zeichnen abbrach. Zeitstempel-Funktionen ergänzt und Pointer-Eingabe für Android/PWA robuster gemacht.
+
+V2.3: In der PDF-Vorschau wird die gewählte Protokollart (Übergabe / Einzug oder Abnahme / Auszug) jetzt eindeutig als Text angezeigt; die beiden unmarkierten Auswahlfelder werden in der Vorschau nicht mehr gezeigt. Unterschriftenfix aus V2.2 bleibt erhalten.

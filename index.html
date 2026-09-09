@@ -239,6 +239,18 @@ function buildPrintPreview(){
   const temp=document.implementation.createHTMLDocument('');
   temp.replaceChild(temp.importNode(clone,true),temp.documentElement);
   syncCloneState(document,temp);
+  // In der Vorschau die gewählte Protokollart eindeutig als Text anzeigen.
+  const selectedArt=document.querySelector('input[name="art"]:checked')?.value||"";
+  const grund=temp.querySelector('main section.card');
+  if(grund){
+    const radioLabels=[...grund.querySelectorAll('label')].filter(l=>l.querySelector('input[name="art"]'));
+    radioLabels.forEach(l=>l.remove());
+    const box=temp.createElement('div');
+    box.className='preview-art';
+    box.innerHTML='<strong>Art des Protokolls:</strong> '+(selectedArt||'keine Auswahl');
+    const h2=grund.querySelector('h2');
+    if(h2) h2.insertAdjacentElement('afterend',box); else grund.prepend(box);
+  }
 
   // Remove app-only UI and preview container itself.
   temp.querySelectorAll('header,.toolbar,.no-print,.sig-actions,.modal,.lock,#printPreview').forEach(el=>el.remove());
@@ -249,7 +261,7 @@ function buildPrintPreview(){
     html,body{background:#fff!important;margin:0!important;padding:0!important}
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif!important}
     main{padding:0!important;max-width:none!important;margin:0!important}
-    .card{border-radius:0!important;margin:0 0 10px!important;break-inside:avoid!important;box-shadow:none!important}
+    .card{border-radius:0!important;margin:0 0 10px!important;break-inside:avoid!important;box-shadow:none!important}.preview-art{font-size:1.08rem!important;padding:8px 0 14px!important;margin-bottom:4px!important}
     input,textarea,select{border:0!important;padding:2px!important;background:transparent!important;color:#111!important;appearance:none!important;-webkit-appearance:none!important;pointer-events:none!important}
     button{display:none!important}
     *{box-sizing:border-box}
