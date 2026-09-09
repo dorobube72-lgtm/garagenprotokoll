@@ -29,3 +29,5 @@ V2.1: Fehler im Fenster „Meine Garagenprotokolle“ behoben. Nach „Öffnen�
 V2.2: Unterschriftenfunktion repariert. In V2.1 wurde beim ersten Berühren des Unterschriftenfeldes eine nicht vorhandene Funktion aufgerufen, wodurch das Zeichnen abbrach. Zeitstempel-Funktionen ergänzt und Pointer-Eingabe für Android/PWA robuster gemacht.
 
 V2.3: In der PDF-Vorschau wird die gewählte Protokollart (Übergabe / Einzug oder Abnahme / Auszug) jetzt eindeutig als Text angezeigt; die beiden unmarkierten Auswahlfelder werden in der Vorschau nicht mehr gezeigt. Unterschriftenfix aus V2.2 bleibt erhalten.
+
+V2.4: Fotoausgabe repariert. Aufgenommene Fotos werden vor PDF/Druck explizit aus dem internen Fotospeicher in die Bildfelder geschrieben und vollständig geladen. Auch die PDF-Vorschau übernimmt die gespeicherten Fotos jetzt ausdrücklich. Leere Foto-Platzhalter werden bei vorhandenen Fotos im PDF ausgeblendet. Unterschriftenfix und eindeutige Protokollart aus V2.2/V2.3 bleiben erhalten.
