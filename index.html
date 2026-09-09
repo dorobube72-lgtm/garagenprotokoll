@@ -60,7 +60,20 @@ header h1{font-size:25px;line-height:1.05;margin:0 0 4px;color:#fff}
 <div id="lock" class="lock"><div class="lock-card"><div style="font-size:40px">🔐</div><h2 id="lockTitle">Datenschutz einrichten</h2><p class="small" id="lockText">Lege ein Passwort für die lokale Verschlüsselung deiner Garagenprotokolle fest.</p><label>App-Passwort</label><input type="password" id="password"><div id="confirmWrap"><label>Passwort wiederholen</label><input type="password" id="password2"></div><div class="error" id="lockError"></div><button type="button" id="unlockBtn" class="btn" style="width:100%">Entsperren / einrichten</button><p class="small"><strong>Wichtig:</strong> Das Passwort kann nicht wiederhergestellt werden.</p></div></div>
 <script>
 const STORE='garage_protocols_enc_v1',CHECK='garage_crypto_check_v1',ITER=180000,SESSION='garage_session_v17',SESSION_MS=43200000;let key=null,currentId=null;let photos={photo_tor:'',photo_innen:''},signatureTimestamp='';
-const enc=new TextEncoder(),dec=new TextDecoder();const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const enc=new TextEncoder(),dec=new TextDecoder();
+function b64(buffer){
+  const bytes=new Uint8Array(buffer),chunk=0x8000;
+  let binary="";
+  for(let i=0;i<bytes.length;i+=chunk){
+    binary+=String.fromCharCode.apply(null,bytes.subarray(i,Math.min(i+chunk,bytes.length)));
+  }
+  return btoa(binary);
+}
+function unb64(s){
+  const binary=atob(s),bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  return bytes;
+}
 function vals(){let o={};document.querySelectorAll('[data-save]').forEach(e=>o[e.dataset.save]=e.type==='checkbox'?e.checked:e.value);o.art=document.querySelector('input[name=art]:checked')?.value||'';o.zustand=document.querySelector('input[name=zustand]:checked')?.value||'';o.sigTenant=document.getElementById('sigTenant').toDataURL();o.sigLandlord=document.getElementById('sigLandlord').toDataURL();o.photo_tor=photos.photo_tor;o.photo_innen=photos.photo_innen;o.signatureTimestamp=signatureTimestamp;return o}
 function fill(o){document.querySelectorAll('[data-save]').forEach(e=>{if(o[e.dataset.save]!==undefined)e.value=o[e.dataset.save]});document.querySelectorAll('input[name=art]').forEach(e=>e.checked=e.value===o.art);document.querySelectorAll('input[name=zustand]').forEach(e=>e.checked=e.value===o.zustand);drawData('sigTenant',o.sigTenant);drawData('sigLandlord',o.sigLandlord);photos.photo_tor=o.photo_tor||'';photos.photo_innen=o.photo_innen||'';signatureTimestamp=o.signatureTimestamp||'';renderStamp();renderPhoto('photo_tor','preview_tor','empty_tor');renderPhoto('photo_innen','preview_innen','empty_innen');owner()}
 function owner(){let f=document.querySelector('[data-save=eigentuemer_vorname]').value,n=document.querySelector('[data-save=eigentuemer_nachname]').value||'Dahlbüdding';document.getElementById('ownerHead').textContent=(f?f+' ':'_____ ')+n;document.getElementById('ownerFooter').textContent=(f?f+' ':'_____ ')+n}
@@ -185,7 +198,7 @@ async function saveProtocol(){
     alert('Garagenprotokoll gespeichert. 🔐');
   }catch(e){
     console.error(e);
-    alert('Das Protokoll konnte nicht gespeichert werden. Bitte die App einmal schließen und erneut öffnen. Falls es dann weiterhin nicht klappt, keine Daten löschen – die vorhandenen Protokolle bleiben erhalten.');
+    alert('Das Protokoll konnte nicht gespeichert werden. Deine bisherigen Protokolle wurden nicht gelöscht.');
   }
 }
 async function showProtocols(){let a=await getAll(),box=document.getElementById('protocolList');box.innerHTML=a.length?'':'<p class="small">Noch keine Protokolle gespeichert.</p>';a.forEach(r=>{let d=r.data,el=document.createElement('div');el.className='item';el.innerHTML=`<strong>${d.objekt||'Garage'} ${d.garage_nr?'· Nr. '+d.garage_nr:''}</strong><div class="small">${d.art||''} · ${d.datum||''} · ${d.mieter_name||d.nachmieter_name||''}</div><div class="actions"><button type="button" class="btn secondary" onclick="openP('${r.id}')">Öffnen</button><button type="button" class="btn secondary" onclick="copyP('${r.id}')">📋 Kopieren</button><button type="button" class="btn danger" onclick="delP('${r.id}')">Löschen</button></div>`;box.appendChild(el)});let m=document.getElementById('modal');m.classList.remove('hidden');m.style.display='flex'}function hideProtocols(){let m=document.getElementById('modal');m.classList.add('hidden');m.style.display='none'}
