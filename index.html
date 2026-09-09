@@ -13,7 +13,7 @@
 </main>
 <div class="toolbar no-print"><button class="btn secondary" onclick="saveProtocol()">💾 Speichern</button><button class="btn secondary" onclick="showProtocols()">📂 Meine Protokolle</button><button class="btn" onclick="window.print()">PDF</button><button class="btn danger" onclick="newProtocol()">Neu</button></div>
 <div id="modal" class="modal hidden no-print"><div class="modal-card"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Meine Garagenprotokolle</h2><button class="btn secondary" onclick="hideProtocols()">Schließen</button></div><p class="small">Gespeicherte Protokolle bleiben verschlüsselt auf diesem Gerät verfügbar.</p><div id="protocolList"></div></div></div>
-<div id="lock" class="lock"><div class="lock-card"><div style="font-size:40px">🔐</div><h2 id="lockTitle">Datenschutz einrichten</h2><p class="small" id="lockText">Lege ein Passwort für die lokale Verschlüsselung deiner Garagenprotokolle fest.</p><label>App-Passwort</label><input type="password" id="password"><div id="confirmWrap"><label>Passwort wiederholen</label><input type="password" id="password2"></div><div class="error" id="lockError"></div><button class="btn" style="width:100%" onclick="unlock()">Entsperren / einrichten</button><p class="small"><strong>Wichtig:</strong> Das Passwort kann nicht wiederhergestellt werden.</p></div></div>
+<div id="lock" class="lock"><div class="lock-card"><div style="font-size:40px">🔐</div><h2 id="lockTitle">Datenschutz einrichten</h2><p class="small" id="lockText">Lege ein Passwort für die lokale Verschlüsselung deiner Garagenprotokolle fest.</p><label>App-Passwort</label><input type="password" id="password"><div id="confirmWrap"><label>Passwort wiederholen</label><input type="password" id="password2"></div><div class="error" id="lockError"></div><button type="button" id="unlockBtn" class="btn" style="width:100%">Entsperren / einrichten</button><p class="small"><strong>Wichtig:</strong> Das Passwort kann nicht wiederhergestellt werden.</p></div></div>
 <script>
 const STORE='garage_protocols_enc_v1',CHECK='garage_crypto_check_v1',ITER=180000;let key=null,currentId=null;
 const enc=new TextEncoder(),dec=new TextDecoder();const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -23,15 +23,22 @@ function owner(){let f=document.querySelector('[data-save=eigentuemer_vorname]')
 document.addEventListener('input',e=>{if(e.target.matches('[data-save=eigentuemer_vorname],[data-save=eigentuemer_nachname]'))owner()});
 async function derive(p,s){let m=await crypto.subtle.importKey('raw',enc.encode(p),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:s,iterations:ITER,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 async function encrypt(o,k=key){let iv=crypto.getRandomValues(new Uint8Array(12)),d=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,enc.encode(JSON.stringify(o)));return{iv:b64(iv),data:b64(d)}}async function decrypt(o,k=key){let d=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},k,unb64(o.data));return JSON.parse(dec.decode(d))}
-async function unlock(){
+async function unlockApp(){
   const p=document.getElementById('password').value;
   const err=document.getElementById('lockError');
+  const btn=document.getElementById('unlockBtn');
   err.textContent='';
   if(p.length<6){err.textContent='Bitte mindestens 6 Zeichen verwenden.';return;}
+  btn.disabled=true;
+  btn.textContent='Wird entsperrt …';
   try{
     const c=localStorage.getItem(CHECK);
     if(!c){
-      if(p!==document.getElementById('password2').value){err.textContent='Die Passwörter stimmen nicht überein.';return;}
+      const p2=document.getElementById('password2').value;
+      if(p!==p2){
+        err.textContent='Die Passwörter stimmen nicht überein.';
+        return;
+      }
       const salt=crypto.getRandomValues(new Uint8Array(16));
       key=await derive(p,salt);
       const test=await encrypt({ok:true});
@@ -39,13 +46,24 @@ async function unlock(){
     }else{
       const x=JSON.parse(c);
       key=await derive(p,unb64(x.salt));
-      await decrypt(x.test);
+      const probe=await decrypt(x.test);
+      if(!probe || probe.ok!==true) throw new Error('Prüfdaten ungültig');
     }
-    document.getElementById('lock').classList.add('hidden');
+
+    // Nicht nur per CSS-Klasse: direkt ausblenden, damit es auf Samsung/Chrome sicher funktioniert.
+    const lock=document.getElementById('lock');
+    lock.classList.add('hidden');
+    lock.style.display='none';
+    document.body.style.overflow='auto';
+    document.getElementById('password').value='';
+    document.getElementById('password2').value='';
   }catch(e){
     key=null;
-    err.textContent='Einrichten/Entsperren fehlgeschlagen. Bitte Seite neu laden und erneut versuchen.';
-    console.error(e);
+    console.error('Unlock error:',e);
+    err.textContent='Entsperren fehlgeschlagen. Bitte prüfe das Passwort.';
+  }finally{
+    btn.disabled=false;
+    btn.textContent='Entsperren / einrichten';
   }
 }
 function initLock(){let c=localStorage.getItem(CHECK);if(c){document.getElementById('lockTitle').textContent='Garagenprotokoll entsperren';document.getElementById('lockText').textContent='Deine Garagen- und Mieterdaten sind lokal verschlüsselt gespeichert.';document.getElementById('confirmWrap').style.display='none'}}
@@ -56,5 +74,14 @@ async function openP(id){let r=(await getAll()).find(x=>x.id===id);if(r){current
 function nr(){let d=new Date(),s=d.toISOString().slice(0,10).replaceAll('-','');return'GP-'+s+'-'+Math.floor(100+Math.random()*900)}function newProtocol(){if(!confirm('Neues Protokoll beginnen? Nicht gespeicherte Eingaben gehen verloren.'))return;currentId=null;document.querySelectorAll('[data-save]').forEach(e=>e.value='');document.querySelectorAll('input[type=radio]').forEach(e=>e.checked=false);document.querySelector('[data-save=eigentuemer_nachname]').value='Dahlbüdding';document.querySelector('[data-save=protokollnr]').value=nr();document.querySelector('[data-save=datum]').value=new Date().toISOString().slice(0,10);clearSig('sigTenant');clearSig('sigLandlord');owner()}
 function setupCanvas(id){let c=document.getElementById(id),ctx=c.getContext('2d'),on=false,last;function size(){let img=c.toDataURL();c.width=c.clientWidth*devicePixelRatio;c.height=c.clientHeight*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);ctx.lineWidth=2;ctx.lineCap='round';drawData(id,img)}size();window.addEventListener('resize',size);let pos=e=>{let r=c.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}};c.addEventListener('pointerdown',e=>{on=true;last=pos(e)});c.addEventListener('pointermove',e=>{if(!on)return;let p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p});window.addEventListener('pointerup',()=>on=false)}function clearSig(id){let c=document.getElementById(id);c.getContext('2d').clearRect(0,0,c.width,c.height)}function drawData(id,src){if(!src)return;let c=document.getElementById(id),im=new Image();im.onload=()=>c.getContext('2d').drawImage(im,0,0,c.clientWidth,c.clientHeight);im.src=src}
 async function exportData(){let a=await getAll(),blob=new Blob([JSON.stringify(await encrypt({type:'garagenprotokoll-backup',protocols:a}),null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),x=document.createElement('a');x.href=u;x.download='Garagenprotokoll_Sicherung_'+new Date().toISOString().slice(0,10)+'.json';x.click();URL.revokeObjectURL(u)}async function importData(e){try{let p=JSON.parse(await e.target.files[0].text()),o=await decrypt(p);if(!o.protocols)throw 0;await setAll(o.protocols);alert('Sicherung geladen.')}catch{alert('Sicherung konnte mit diesem Passwort nicht gelesen werden.')}e.target.value=''}
-window.addEventListener('load',()=>{initLock();setupCanvas('sigTenant');setupCanvas('sigLandlord');document.querySelector('[data-save=protokollnr]').value=nr();document.querySelector('[data-save=datum]').value=new Date().toISOString().slice(0,10);owner()});
+window.addEventListener('load',()=>{
+  initLock();
+  document.getElementById('unlockBtn').addEventListener('click',unlockApp);
+  document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')unlockApp()});
+  document.getElementById('password2').addEventListener('keydown',e=>{if(e.key==='Enter')unlockApp()});
+  setupCanvas('sigTenant');setupCanvas('sigLandlord');
+  document.querySelector('[data-save=protokollnr]').value=nr();
+  document.querySelector('[data-save=datum]').value=new Date().toISOString().slice(0,10);
+  owner();
+});
 </script></body></html>
