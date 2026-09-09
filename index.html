@@ -13,6 +13,8 @@ header h1{font-size:25px;line-height:1.05;margin:0 0 4px;color:#fff}
 .photo-empty{height:110px;border:1px dashed #94a3b8;border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:13px;margin-top:8px;background:#fff}
 @media(max-width:600px){.photo-grid{grid-template-columns:1fr}}
 .notice{background:#f9fafb;border-left:4px solid #9ca3af;padding:10px 12px;border-radius:8px;font-size:13px}.signature-wrap{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff}canvas{display:block;width:100%;height:150px;touch-action:none}.sig-actions{padding:7px;border-top:1px solid var(--border)}.modal{position:fixed;inset:0;background:#11182773;z-index:50;padding:18px;display:flex;align-items:flex-end;justify-content:center}.hidden{display:none}.modal-card{width:min(650px,100%);max-height:82vh;overflow:auto;background:#fff;border-radius:18px;padding:14px}.item{border:1px solid var(--border);border-radius:12px;padding:11px;margin:9px 0}.actions{display:flex;gap:7px;margin-top:8px}.actions button{flex:1}.lock{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:18px}.lock.hidden{display:none}.lock-card{width:min(450px,100%);background:#fff;border:1px solid var(--border);border-radius:20px;padding:20px}.lock-card h2{font-size:21px}.error{color:var(--danger);font-size:13px;font-weight:700;min-height:18px}@media(max-width:600px){.grid2{grid-template-columns:1fr}}@media print{header,.toolbar,.no-print,.sig-actions{display:none!important}body{background:#fff}main{padding:0}.card{border-radius:0;margin:0 0 10px;break-inside:avoid}input,textarea{border:0!important;padding:2px!important}}
+
+.preview-overlay{position:fixed;inset:0;background:#eef3f8;z-index:9998;overflow:auto;display:none}.preview-sheet{max-width:850px;margin:18px auto;background:white;padding:22px;border-radius:18px;box-shadow:0 8px 30px #0002}.preview-top{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#eef3f8;padding:10px 0}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 18px}.preview-item{padding:5px 0;border-bottom:1px solid #edf0f3}.preview-photos{display:grid;grid-template-columns:1fr 1fr;gap:12px}.preview-photos img{width:100%;max-height:350px;object-fit:contain;border-radius:10px;border:1px solid #ddd}@media(max-width:650px){.preview-sheet{margin:0;border-radius:0;padding:14px}.preview-grid,.preview-photos{grid-template-columns:1fr}}
 </style></head><body>
 <header><div class="header-brand"><img src="icon-192.png" alt="Garagenprotokoll"><div class="header-copy"><h1>Garagenprotokoll</h1><div class="header-subtitle">Abnahme/Übergabe</div><div class="header-meta"><strong>Eigentümer: <span id="ownerHead">_____ Dahlbüdding</span>, vertreten durch Domoconzept Immobilien- und Verwaltungs GmbH &amp; Co. KG</strong><br>Mobil ausfüllen · speichern · unterschreiben · als PDF drucken</div></div></div></header>
 <main>
@@ -44,8 +46,8 @@ document.addEventListener('input',e=>{if(e.target.matches('[data-save=eigentueme
 async function derive(p,s){let m=await crypto.subtle.importKey('raw',enc.encode(p),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:s,iterations:ITER,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 async function encrypt(o,k=key){let iv=crypto.getRandomValues(new Uint8Array(12)),d=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,enc.encode(JSON.stringify(o)));return{iv:b64(iv),data:b64(d)}}async function decrypt(o,k=key){let d=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},k,unb64(o.data));return JSON.parse(dec.decode(d))}
 
-function rememberSession(p){try{sessionStorage.setItem(SESSION,JSON.stringify({password:p,expires:Date.now()+SESSION_MS}))}catch(e){}}
-function clearSession(){try{sessionStorage.removeItem(SESSION)}catch(e){}}
+function rememberSession(p){try{localStorage.setItem(SESSION,JSON.stringify({password:p,expires:Date.now()+SESSION_MS}))}catch(e){}}
+function clearSession(){try{localStorage.removeItem(SESSION)}catch(e){}}
 function formatStamp(iso){if(!iso)return'';let d=new Date(iso);return d.toLocaleDateString('de-DE')+' um '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr'}
 function renderStamp(){let w=document.getElementById('signatureStampWrap'),s=document.getElementById('signatureStamp');if(!w||!s)return;if(signatureTimestamp){s.textContent=formatStamp(signatureTimestamp);w.style.display='block'}else w.style.display='none'}
 function markSigned(){if(!signatureTimestamp)signatureTimestamp=new Date().toISOString();renderStamp()}
@@ -53,7 +55,7 @@ function lockNow(){clearSession();key=null;document.getElementById('password').v
 async function trySessionUnlock(){
   let c=localStorage.getItem(CHECK);if(!c)return false;
   try{
-    let s=JSON.parse(sessionStorage.getItem(SESSION)||'null');if(!s||!s.password||Date.now()>s.expires){clearSession();return false}
+    let s=JSON.parse(localStorage.getItem(SESSION)||'null');if(!s||!s.password||Date.now()>s.expires){clearSession();return false}
     let x=JSON.parse(c),k=await derive(s.password,unb64(x.salt)),probe=await decrypt(x.test,k);
     if(!probe||probe.ok!==true)throw new Error('invalid');
     key=k;rememberSession(s.password);document.getElementById('lock').style.display='none';return true
@@ -144,4 +146,23 @@ window.addEventListener('load',()=>{
   document.querySelector('[data-save=datum]').value=new Date().toISOString().slice(0,10);
   owner();
 });
-</script></body></html>
+
+function ep(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function pl(el){if(el.id){let l=document.querySelector('label[for="'+CSS.escape(el.id)+'"]');if(l)return l.textContent.trim()}let p=el.closest('label');return p?(p.childNodes[0]?.textContent?.trim()||el.name||el.id):el.name||el.id||'Angabe'}
+function showPreview(){
+  let parts=['<h1>Garagenprotokoll</h1><p><strong>Abnahme/Übergabe</strong></p><div class="preview-grid">'],seen=new Set();
+  document.querySelectorAll('main input,main select,main textarea').forEach(el=>{
+    if(el.type==='file'||el.type==='button'||el.type==='submit'||el.closest('.no-print'))return;
+    if((el.type==='radio'||el.type==='checkbox')&&!el.checked)return;
+    let k=el.id||el.name;if(k&&seen.has(k)&&el.type!=='radio')return;if(k)seen.add(k);
+    let v=(el.type==='radio'||el.type==='checkbox')?(el.value||'Ja'):el.value;if(!String(v||'').trim())return;
+    parts.push('<div class="preview-item"><strong>'+ep(pl(el))+':</strong><br>'+ep(v)+'</div>')
+  });parts.push('</div>');
+  if(photos.photo_tor||photos.photo_innen){parts.push('<h2>Fotodokumentation</h2><div class="preview-photos">');if(photos.photo_tor)parts.push('<div><strong>Garagentor außen</strong><img src="'+photos.photo_tor+'"></div>');if(photos.photo_innen)parts.push('<div><strong>Garage innen</strong><img src="'+photos.photo_innen+'"></div>');parts.push('</div>')}
+  parts.push('<h2>Unterschriften</h2><p>Die Unterschriften erfolgen nach gemeinsamer Prüfung dieser Vorschau.</p>');
+  document.getElementById('previewContent').innerHTML=parts.join('');document.getElementById('previewOverlay').style.display='block';document.body.style.overflow='hidden';window.scrollTo(0,0)
+}
+function closePreview(){document.getElementById('previewOverlay').style.display='none';document.body.style.overflow=''}
+</script>
+<div id="previewOverlay" class="preview-overlay"><div class="preview-sheet"><div class="preview-top no-print"><strong>👁 Protokoll-Vorschau</strong><button class="btn primary" type="button" onclick="closePreview()">← Zurück zum Protokoll</button></div><div id="previewContent"></div></div></div>
+</body></html>

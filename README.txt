@@ -17,3 +17,5 @@ Version 1.5: Neuer Kopfbereich mit App-Icon, Titel „Garagenprotokoll“ und Un
 Version 1.6: Fotodokumentation ergänzt: je ein Foto „Garagentor außen“ und „Garage innen“. Fotos werden mit dem Protokoll verschlüsselt gespeichert, beim Öffnen wieder angezeigt, beim Kopieren übernommen und beim neuen Protokoll geleert.
 
 Version 1.7: 12-Stunden-Arbeitssitzung (Passwort nur einmal pro Sitzung), manueller „Sperren“-Button und automatischer Zeitstempel beim Unterschreiben. Fotodokumentation bleibt erhalten.
+
+Version 1.8: 12-Stunden-Freigabe bleibt über vollständiges Schließen der PWA erhalten; manueller Sperren-Button löscht sie sofort. Neue schreibgeschützte Vorschau vor der Unterschrift; beide Fotofelder werden angezeigt.
