@@ -23,7 +23,31 @@ function owner(){let f=document.querySelector('[data-save=eigentuemer_vorname]')
 document.addEventListener('input',e=>{if(e.target.matches('[data-save=eigentuemer_vorname],[data-save=eigentuemer_nachname]'))owner()});
 async function derive(p,s){let m=await crypto.subtle.importKey('raw',enc.encode(p),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:s,iterations:ITER,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
 async function encrypt(o,k=key){let iv=crypto.getRandomValues(new Uint8Array(12)),d=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,enc.encode(JSON.stringify(o)));return{iv:b64(iv),data:b64(d)}}async function decrypt(o,k=key){let d=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},k,unb64(o.data));return JSON.parse(dec.decode(d))}
-async function unlock(){let p=document.getElementById('password').value,err=document.getElementById('lockError');if(p.length<6){err.textContent='Bitte mindestens 6 Zeichen verwenden.';return}let c=localStorage.getItem(CHECK);try{if(!c){if(p!==document.getElementById('password2').value){err.textContent='Die Passwörter stimmen nicht überein.';return}let salt=crypto.getRandomValues(new Uint8Array(16));key=await derive(p,salt);let test=await encrypt({ok:true});localStorage.setItem(CHECK,JSON.stringify({salt:b64(salt),test}));}else{let x=JSON.parse(c);key=await derive(p,unb64(x.salt));await decrypt(x.test);}catch(e){}try{if(c){let x=JSON.parse(c);key=await derive(p,unb64(x.salt));await decrypt(x.test)}document.getElementById('lock').classList.add('hidden')}catch(e){key=null;err.textContent='Passwort nicht korrekt.'}}
+async function unlock(){
+  const p=document.getElementById('password').value;
+  const err=document.getElementById('lockError');
+  err.textContent='';
+  if(p.length<6){err.textContent='Bitte mindestens 6 Zeichen verwenden.';return;}
+  try{
+    const c=localStorage.getItem(CHECK);
+    if(!c){
+      if(p!==document.getElementById('password2').value){err.textContent='Die Passwörter stimmen nicht überein.';return;}
+      const salt=crypto.getRandomValues(new Uint8Array(16));
+      key=await derive(p,salt);
+      const test=await encrypt({ok:true});
+      localStorage.setItem(CHECK,JSON.stringify({salt:b64(salt),test}));
+    }else{
+      const x=JSON.parse(c);
+      key=await derive(p,unb64(x.salt));
+      await decrypt(x.test);
+    }
+    document.getElementById('lock').classList.add('hidden');
+  }catch(e){
+    key=null;
+    err.textContent='Einrichten/Entsperren fehlgeschlagen. Bitte Seite neu laden und erneut versuchen.';
+    console.error(e);
+  }
+}
 function initLock(){let c=localStorage.getItem(CHECK);if(c){document.getElementById('lockTitle').textContent='Garagenprotokoll entsperren';document.getElementById('lockText').textContent='Deine Garagen- und Mieterdaten sind lokal verschlüsselt gespeichert.';document.getElementById('confirmWrap').style.display='none'}}
 async function getAll(){let raw=localStorage.getItem(STORE);if(!raw)return[];try{return await decrypt(JSON.parse(raw))}catch{return[]}}async function setAll(a){localStorage.setItem(STORE,JSON.stringify(await encrypt(a)))}
 async function saveProtocol(){if(!key)return;let a=await getAll(),o=vals();if(!currentId)currentId=crypto.randomUUID();let rec={id:currentId,updated:new Date().toISOString(),data:o},i=a.findIndex(x=>x.id===currentId);if(i>=0)a[i]=rec;else a.unshift(rec);await setAll(a);alert('Garagenprotokoll gespeichert. 🔐')}
