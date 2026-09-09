@@ -13,3 +13,5 @@ Version 1.3: Bugfix für Datenschutz-Login: Nach erfolgreichem Einrichten/Entspe
 Version 1.4: Login robuster gemacht: fester Button-Eventhandler, sichtbarer Entsperrstatus, direkte Ausblendung des Sperrbildschirms und klare Passwort-Fehlermeldung.
 
 Version 1.5: Neuer Kopfbereich mit App-Icon, Titel „Garagenprotokoll“ und Untertitel „Abnahme/Übergabe“. Alle bisherigen Funktionen inkl. Verschlüsselung/Login bleiben erhalten.
+
+Version 1.6: Fotodokumentation ergänzt: je ein Foto „Garagentor außen“ und „Garage innen“. Fotos werden mit dem Protokoll verschlüsselt gespeichert, beim Öffnen wieder angezeigt, beim Kopieren übernommen und beim neuen Protokoll geleert.
